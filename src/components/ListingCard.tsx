@@ -1,15 +1,45 @@
 import React, { FC, useState } from "react";
 import { DirectListingV3 } from "@thirdweb-dev/sdk";
+import { useAddress, useValidDirectListings } from "@thirdweb-dev/react";
+
+import { getNFTAddress } from "@/util/getContractAddress";
+import { getMarketplaceContract } from "@/util/getContracts";
 
 const ListingCard: FC<DirectListingV3> = (nft) => {
+    const address = useAddress();
+    const nft_address = getNFTAddress();
+    const { marketplace } = getMarketplaceContract();
     const [message, setMessage] = useState("");
-    
+
+
+    const { data: directListing } = useValidDirectListings(marketplace, {
+        tokenContract: nft_address,
+        tokenId: nft.asset.id,
+    });
+
     const handleListing = async () => {
-       
+        try {
+            if (directListing && directListing[0].creatorAddress !== address) {
+                setMessage("Buying ...");
+                let res = await marketplace?.directListings.buyFromListing(
+                    directListing[0].id,
+                    1
+                );
+
+                if (res && res.receipt) {
+                    setMessage("Bought");
+                }
+            } else {
+                setMessage("Already yours");
+            }
+        } catch (e) {
+            setMessage("Error Buying!");
+            console.log("Error buying", e);
+        }
     };
 
     return (
-        <div className=" relative text-white rounded-lg shadow-md w-full max-w-2xl relative">
+        <div className="text-white rounded-lg shadow-md w-full max-w-2xl relative">
             <img
                 src={nft.asset.image ?? ""}
                 alt="nft_img"
@@ -29,7 +59,7 @@ const ListingCard: FC<DirectListingV3> = (nft) => {
                             {message !== "" && <p>{message}</p>}
                         </div>
                         <button
-                            className="bg-blue-500 bg-blue-700 text-white font-bold p-2 rounded"
+                            className="bg-blue-700 text-white font-bold p-2 rounded"
                             onClick={handleListing}
                         >
                             Buy
