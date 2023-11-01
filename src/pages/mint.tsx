@@ -1,18 +1,24 @@
-import Layout from "@/layout/Layout";
 import { useState } from "react";
 
+import Layout from "@/layout/Layout";
+import { MintMetadata } from "@/types/mintMetadata";
+import { getNFTContract } from "@/util/getContracts";
+import { useAddress, useMintNFT } from "@thirdweb-dev/react";
+
 export default function Wallet() {
+    const address = useAddress();
+    const { nft_contract } = getNFTContract();
+    const { mutate: mintNFT, isLoading, error } = useMintNFT(nft_contract);
+
     const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
     const [image, setImage] = useState("");
+    const [description, setDescription] = useState("");
 
     const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setName(event.target.value);
     };
 
-    const handleDescriptionChange = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
+    const handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setDescription(event.target.value);
     };
 
@@ -21,7 +27,27 @@ export default function Wallet() {
     };
 
     const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
+        try {
+            event.preventDefault();
+
+            if (name === "" || description === "" || image === "") {
+                return;
+            }
+
+            const metadata: MintMetadata = {
+                metadata: {
+                    name,
+                    description,
+                    image,
+                },
+                to: address ?? "",
+                supply: 1,
+            };
+
+            mintNFT(metadata);
+        } catch (e) {
+            console.log(e);
+        }
     };
     return (
         <Layout>
@@ -75,6 +101,20 @@ export default function Wallet() {
                             Mint
                         </button>
                     </form>
+                    {
+                        isLoading && (
+                            <div className="text-center mt-4">
+                                Minting in progress ...
+                            </div>
+                        )
+                    }
+                    {
+                        (error as unknown as boolean) && (
+                            <div className="text-center mt-4">
+                                Minting in progress ...
+                            </div>
+                        )
+                    }
                 </div>
             </div>
         </Layout>
