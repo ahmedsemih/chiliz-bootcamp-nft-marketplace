@@ -1,4 +1,7 @@
 import { FC } from "react";
+import { useCancelDirectListing } from "@thirdweb-dev/react";
+
+import { getMarketplaceContract } from "@/util/getContracts";
 
 interface CancelSellingCardProps {
     price: number;
@@ -6,12 +9,22 @@ interface CancelSellingCardProps {
     listingID: string;
 }
 
-const CancelSellingCard: FC<CancelSellingCardProps> = ({
-    price,
-    symbol,
-    listingID,
-}) => {
-    const handleDelist = () => {};
+const CancelSellingCard: FC<CancelSellingCardProps> = ({ price, symbol, listingID }) => {
+    const { marketplace } = getMarketplaceContract();
+
+    const {
+        mutate: cancelDirectListing,
+        isLoading,
+        error,
+    } = useCancelDirectListing(marketplace);
+
+    const handleDelist = () => {
+        try {
+            cancelDirectListing(listingID);
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
     return (
         <div className="relative bg-gray-800 text-white p-6 rounded-lg w-8/12 shadow-md mt-4">
@@ -21,10 +34,19 @@ const CancelSellingCard: FC<CancelSellingCardProps> = ({
 
             <button
                 onClick={handleDelist}
-                className="mt-4 bg-blue-500 bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="mt-4 bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
                 Cancel Listing
             </button>
+
+            {(error as unknown as boolean) ? (
+                <div className="text-center mt-4">Error Delisting! </div>
+            ) : null}
+            {isLoading && (
+                <div className="text-center mt-4">
+                    Cancel listing in progress...
+                </div>
+            )}
         </div>
     );
 };
