@@ -26,11 +26,13 @@ function Home() {
                             </h1>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
                                 {
-                                    directListings && directListings.map((listedNFT, id) => {
+                                    directListings?.length! > 0 ? directListings!.map((listedNFT, id) => {
                                         return (
                                             <ListingCard {...listedNFT} key={id} />
                                         );
-                                    })
+                                    }) : (
+                                        <p>There is no NFT in the marketplace.</p>
+                                    )
                                 }
                             </div>
                         </div>

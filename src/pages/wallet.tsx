@@ -30,8 +30,8 @@ export default function Wallet() {
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6 ">
                             {
-                                ownedNFTs ?
-                                ownedNFTs.map((nft, id) => {
+                                ownedNFTs?.length! > 0 ?
+                                ownedNFTs?.map((nft, id) => {
                                     return <NFTCard key={id} {...nft} />;
                                 }) : (
                                     <p>You have no NFT.</p>
